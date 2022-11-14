@@ -24,14 +24,19 @@ predict propensity_score, pr
 twoway (histogram propensity_score if ranked2017==1, color(green%30)) ///
        (histogram propensity_score if ranked2017==0, color(red%30)), ///
 	   legend(order(1 "Treatment" 2 "Control" ))
+graph export mygraph.gif
 drop if propensity_score < 0.2 
 drop if propensity_score > 0.8 
 
 * 6. Group your observations into ``blocks'' based on propensity score. 
 sort propensity_score
-gen block = floor(_n/5), replace 
+gen block = floor(_n/5)
 
 * 7. Analyze the treatment effect of being ranked on alumni donations,
 * while controlling for block-fixed effects as well as other covariates. Include this table in your writeup. . Do not forget to write code to label your variables and to write the table notes describing what is in the table.
 
 reg alumnidonations2018 ranked2017 i.block academicquality athleticquality nearbigmarket i.collegeid 
+
+eststo regression_prop
+global tableoptions "bf(%15.2gc) sfmt(%15.2gc) se label noisily noeqlines nonumbers varlabels(_cons Constant, end("" ) nolast)  starlevels(* 0.1 ** 0.05 *** 0.01) replace r2"
+esttab regression_prop using Reg-Table-p.tex, drop(*.collegeid) 
